@@ -6,21 +6,25 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+
     steps:
-    - name: Baixar codigo
+    - name: Baixar codigo do repositorio
       uses: actions/checkout@v4
 
-    - name: Criar pasta do aplicativo
-      shell: powershell
-      run: |
-        mkdir dist
-        if (Test-Path "main.js") { Copy-Item "main.js" -Destination "dist" }
-        if (Test-Path "package.json") { Copy-Item "package.json" -Destination "dist" }
-        if (Test-Path "config.json") { Copy-Item "config.json" -Destination "dist" }
-        if (Test-Path "LEIA-ME.md") { Copy-Item "LEIA-ME.md" -Destination "dist" }
+    - name: Configurar Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
 
-    - name: Disponibilizar arquivos para download
+    - name: Instalar as dependencias do Electron
+      run: npm install
+
+    - name: Compilar o executavel Portable (.exe)
+      run: npm run build
+
+    - name: Disponibilizar o Voxali.exe para download
       uses: actions/upload-artifact@v4
       with:
-        name: Voxali-arquivos-desktop
-        path: dist/*
+        name: Voxali-Instalador
+        path: dist/*.exe

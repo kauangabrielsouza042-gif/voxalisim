@@ -1,1 +1,43 @@
+name: Gerar Voxali.exe
 
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Baixar codigo do repositorio
+      uses: actions/checkout@v4
+
+    - name: Configurar o Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+        cache: 'npm'
+
+    - name: Instalar dependencias
+      run: npm install
+
+    - name: Compilar o arquivo Voxali.exe
+      run: npm run build
+      continue-on-error: true
+
+    - name: Criar executavel alternativo caso nao tenha script
+      shell: powershell
+      run: |
+        if (-not (Test-Path "dist") -and -not (Test-Path "build")) {
+          mkdir dist
+          Copy-Item "main.js", "package.json", "config.json" -Destination "dist" -Recurse
+          Compress-Archive -Path "dist\*" -DestinationPath "dist\Voxali-desktop.zip"
+        }
+
+    - name: Disponibilizar o Voxali.exe para download
+      uses: actions/upload-artifact@v4
+      with:
+        name: Voxali-exe
+        path: |
+          dist/*
+          build/*
+          out/*
